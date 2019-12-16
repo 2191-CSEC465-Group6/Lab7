@@ -52,7 +52,7 @@ init() {
     # append name of $PRIVATE_BUCKET to wordlist.txt
     echo $PRIVATE_BUCKET >> ./wordlist_short.txt
 
-    # create a 1GB file with random contents to upload to newly created s3 buckets
+    # create a 1MB file with random contents to upload to newly created s3 buckets
     TMPFILE=$(mktemp)
     dd if=/dev/zero of=$TMPFILE count=1024 bs=1024 1>/dev/null 2>&1
 

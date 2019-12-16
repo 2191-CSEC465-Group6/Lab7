@@ -51,6 +51,13 @@ init() {
 
     # append name of $PRIVATE_BUCKET to wordlist.txt
     echo $PRIVATE_BUCKET >> ./wordlist_short.txt
+
+    # create a 1GB file with random contents to upload to newly created s3 buckets
+    TMPFILE=$(mktemp)
+    dd if=/dev/zero of=$TMPFILE count=1024 bs=1024 1>/dev/null 2>&1
+
+    aws s3 cp $TMPFILE s3://$PUBLIC_BUCKET/foo 1>/dev/null 2>&1
+    aws s3 cp $TMPFILE s3://$PRIVATE_BUCKET/bar 1>/dev/null 2>&1
 }
 
 # check_bucket - uses aws-cli to see if given bucket name is accessible, and if so prompts user
@@ -61,16 +68,19 @@ check_bucket() {
     if [ $RETURN_CODE -eq 0 ]
     then
         echo $1 is open
-        # some trickery is needed to prompt for user input while in a while loop
-        read -p "Would you like to view the contents? (y/n): " continue </dev/tty
-        if [ "$continue" == "y" ]
+        if [ -t 1 ]
         then
-            echo $1 contents:
-            aws s3 ls s3://$1
+            # some trickery is needed to prompt for user input while in a while loop
+            read -p "Would you like to view the contents? (y/n): " continue </dev/tty
+            if [ "$continue" == "y" ]
+            then
+                echo $1 contents:
+                aws s3 ls s3://$1
+            fi
         fi
     elif [ $RETURN_CODE -eq 255 ]
     then
-        ERROR_MESSAGE=$(aws s3 ls s3://$1 2>&1 | sed 's/(?<=operation: )')
+        ERROR_MESSAGE=$(aws s3 ls s3://$1 2>&1)
         if [[ $ERROR_MESSAGE =~ "NoSuchBucket" ]]
         then
             echo $1 does not exist
@@ -92,6 +102,7 @@ check_bucket() {
 # s3 buckets
 finish() {
     rm -f ./wordlist_short.txt 1>/dev/null 2>&1
+    rm -f $TMPFILE 1>/dev/null 2>&1
     aws s3 rb s3://$PRIVATE_BUCKET --force 1>/dev/null 2>&1
     aws s3 rb s3://$PUBLIC_BUCKET --force 1>/dev/null 2>&1
     exit

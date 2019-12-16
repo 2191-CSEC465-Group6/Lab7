@@ -6,8 +6,8 @@
 # exists, creates a smaller subset of that list called wordlist_short.txt, and creates two new s3
 # buckets and appends their names to wordlist_short.txt
 init() {
-    # check that aws-cli, shuf, curl, sed, and vim are installed
-    i=0; n=0; progs=(aws shuf curl sed vim);
+    # check that needed programs are installed
+    i=0; n=0; progs=(aws shuf curl sed vim jq);
     for p in "${progs[@]}"; do
         if hash "$p" &>/dev/null
         then

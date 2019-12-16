@@ -6,8 +6,8 @@
 # exists, creates a smaller subset of that list called wordlist_short.txt, and creates two new s3
 # buckets and appends their names to wordlist_short.txt
 init() {
-    # check that aws-cli, shuf, curl, and sed are installed
-    i=0; n=0; progs=(aws shuf curl sed);
+    # check that aws-cli, shuf, curl, sed, and vim are installed
+    i=0; n=0; progs=(aws shuf curl sed vim);
     for p in "${progs[@]}"; do
         if hash "$p" &>/dev/null
         then
@@ -32,7 +32,7 @@ init() {
         WORDLIST_URL='https://raw.githubusercontent.com/aljazceru/s3-bucket-scanner/master/wordlist.txt'
         curl $WORDLIST_URL -o ./wordlist_full.txt 1>/dev/null 2>&1
         # the first 5 lines of the wordlist are not valid s3 bucket names and will throw an error
-        ex -s -c '1d5|x' wordlist_full.txt
+        vim -e -s -c '1d5|x' wordlist_full.txt
     fi
 
     # since the original wordlist is > 300,000 lines long, pick 100 random lines to

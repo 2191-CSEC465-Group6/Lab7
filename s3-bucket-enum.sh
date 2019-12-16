@@ -64,7 +64,7 @@ init() {
 # check_bucket - uses aws-cli to see if given bucket name is accessible, and if so prompts user
 # if they want to display contents of said bucket
 check_bucket() {
-    RETURN_MESSAGE=$(aws s3 ls s3://$1 1>/dev/null)
+    RETURN_MESSAGE=$(aws s3 ls s3://$1 2>&1 >/dev/null)
     RETURN_CODE=$?
     if [ $RETURN_CODE -eq 0 ]
     then

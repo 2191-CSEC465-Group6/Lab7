@@ -28,9 +28,10 @@ init() {
     # check if full wordlist exists and if it doesn't download it
     if [ ! -s ./wordlist_full.txt ]
     then
+        echo "./wordlist_full.txt not found locally, downloading now"
         # download an open-source wordlist for AWS s3 bucket names
         WORDLIST_URL='https://raw.githubusercontent.com/aljazceru/s3-bucket-scanner/master/wordlist.txt'
-        curl $WORDLIST_URL -o ./wordlist_full.txt 1>/dev/null 2>&1
+        curl $WORDLIST_URL -o ./wordlist_full.txt -#
         # the first 5 lines of the wordlist are not valid s3 bucket names and will throw an error
         vim -e -s -c '1d5|x' wordlist_full.txt
     fi
@@ -63,7 +64,7 @@ init() {
 # check_bucket - uses aws-cli to see if given bucket name is accessible, and if so prompts user
 # if they want to display contents of said bucket
 check_bucket() {
-    aws s3 ls s3://$1 1>/dev/null 2>&1
+    RETURN_MESSAGE=$(aws s3 ls s3://$1 1>/dev/null)
     RETURN_CODE=$?
     if [ $RETURN_CODE -eq 0 ]
     then
@@ -80,18 +81,20 @@ check_bucket() {
         fi
     elif [ $RETURN_CODE -eq 255 ]
     then
-        ERROR_MESSAGE=$(aws s3 ls s3://$1 2>&1)
-        if [[ $ERROR_MESSAGE =~ "NoSuchBucket" ]]
+        if [[ $RETURN_MESSAGE =~ "InvalidBucketName" ]]
+        then
+            echo $1 is not a valid bucket name
+        elif [[ $RETURN_MESSAGE =~ "NoSuchBucket" ]]
         then
             echo $1 does not exist
-        elif [[ $ERROR_MESSAGE =~ "AccessDenied" ]]
+        elif [[ $RETURN_MESSAGE =~ "AccessDenied" ]]
         then
             echo $1 is not open
-        elif [[ $ERROR_MESSAGE =~ "AllAccessDisabled" ]]
+        elif [[ $RETURN_MESSAGE =~ "AllAccessDisabled" ]]
         then
             echo $1 has all access disabled
         else
-            echo $1: $ERROR_MESSAGE
+            echo $1: $RETURN_MESSAGE
         fi
     else
         echo Unknown error

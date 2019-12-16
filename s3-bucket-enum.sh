@@ -40,17 +40,17 @@ init() {
     shuf -n 100 ./wordlist_full.txt > ./wordlist_short.txt
 
     RESOURCE_PREFIX="csec-465-team6"
-    # create a private s3 bucket
-    PRIVATE_BUCKET=$(aws s3api create-bucket --acl public-read --bucket $RESOURCE_PREFIX-public --region us-east-1 | jq .Location | sed 's/["\/]//g')
-
-    # append name of $PRIVATE_BUCKET to wordlist.txt
-    echo $PRIVATE_BUCKET >> ./wordlist_short.txt
-
     # create a public s3 bucket
-    PUBLIC_BUCKET=$(aws s3api create-bucket --acl private --bucket $RESOURCE_PREFIX-private --region us-east-1 | jq .Location | sed 's/["\/]//g')
+    PUBLIC_BUCKET=$(aws s3api create-bucket --acl public-read --bucket $RESOURCE_PREFIX-public --region us-east-1 | jq .Location | sed 's/["\/]//g')
 
     # append name of $PUBLIC_BUCKET to wordlist.txt
     echo $PUBLIC_BUCKET >> ./wordlist_short.txt
+
+    # create a private s3 bucket
+    PRIVATE_BUCKET=$(aws s3api create-bucket --acl private --bucket $RESOURCE_PREFIX-private --region us-east-1 | jq .Location | sed 's/["\/]//g')
+
+    # append name of $PRIVATE_BUCKET to wordlist.txt
+    echo $PRIVATE_BUCKET >> ./wordlist_short.txt
 }
 
 # check_bucket - uses aws-cli to see if given bucket name is accessible, and if so prompts user
